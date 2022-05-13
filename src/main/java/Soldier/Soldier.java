@@ -27,10 +27,37 @@ public class Soldier {
     }
 
     public void addModifier(IModifier modifier){
-        //TODO after adding Modifier class
+        modifiers.add(modifier);
+    }
+
+    // MaxHp - 0
+    // Attack - 1
+    // MeleeDefence - 2
+    // RangeDefence - 3
+    public void addModifier(int modifier_number, int value){
+        switch (modifier_number){
+            case 0:
+                MaxHp += value;
+                CurrHp += value;
+                break;
+            case 1:
+                Attack += value;
+                break;
+            case 2:
+                MeleeDefence += value;
+                break;
+            case 3:
+                RangeDefence += value;
+                break;
+        }
     }
 
     Soldier chooseTarget(List<Soldier> enemies){
+        for(int i = 0; i < enemies.size(); i++){
+            for(int j = 0; j < enemies.get(i).getModifiers().size(); j++){
+                if()
+            }
+        }
         return null; //TODO
     }
 
@@ -67,6 +94,13 @@ public class Soldier {
         return RangeDefence;
     }
 
+    public List<IModifier> getModifiers() {
+        return modifiers;
+    }
+
+    public Vector<String> getTags() {
+        return tags;
+    }
 
     @Override
     public String toString() {
