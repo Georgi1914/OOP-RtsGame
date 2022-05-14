@@ -11,6 +11,13 @@ public class Attack implements IModifier{
         this.value = value;
     }
 
+    public int getValue() {
+        return value;
+    }
+
+    public String getEnemy_tag() {
+        return enemy_tag;
+    }
 
     @Override
     public void addModifierToSoldier(Soldier soldier) {
@@ -21,8 +28,8 @@ public class Attack implements IModifier{
     @Override
     public int calculate(Soldier soldier, Soldier enemy) {
         for(int i = 0; i < soldier.getModifiers().size(); i++){
-            for(int j = 0; i < enemy.getTags().size(); j++) {
-                if (((Defence) soldier.getModifiers().get(i)).getEnemy_tag() == enemy.getTags().get(j)){
+            for(int j = 0; j < enemy.getTags().size(); j++) {
+                if (((Attack) soldier.getModifiers().get(i)).getEnemy_tag().equals(enemy.getTags().get(j))){
                     return this.value;
                 }
             }

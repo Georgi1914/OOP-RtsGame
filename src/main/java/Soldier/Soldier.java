@@ -1,7 +1,11 @@
 package Soldier;
 
+import Modifiers.Attack;
+import Modifiers.Attribute;
+import Modifiers.Defence;
 import Modifiers.IModifier;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -24,9 +28,14 @@ public class Soldier {
         this.MeleeDefence = MeleeDefence;
         this.RangeDefence = RangeDefence;
         this.attack_type = attack_type;
+        tags = new Vector<>();
+        modifiers = new ArrayList<>();
     }
 
     public void addModifier(IModifier modifier){
+        if(modifier instanceof Attribute){
+            modifier.addModifierToSoldier(this);
+        }
         modifiers.add(modifier);
     }
 
@@ -52,28 +61,56 @@ public class Soldier {
         }
     }
 
-    Soldier chooseTarget(List<Soldier> enemies){
-        for(int i = 0; i < enemies.size(); i++){
-            for(int j = 0; j < enemies.get(i).getModifiers().size(); j++){
-                if()
+    public Soldier chooseTarget(List<Soldier> enemies){
+        int max = getDamageAgainst(enemies.get(0));
+        for (Soldier enemy : enemies) {
+            if (max < getDamageAgainst(enemy)) {
+                max = getDamageAgainst(enemy);
             }
         }
-        return null; //TODO
+        int i = 0;
+        while (getDamageAgainst(enemies.get(i)) != max){
+            i++;
+        }
+        return enemies.get(i);
     }
 
-    int getDamageAgainst(Soldier enemy){
-        return 0; //TODO
+    public int getDamageAgainst(Soldier enemy){
+        int result = Attack;
+        for (IModifier modifier : modifiers) {
+            if (modifier instanceof Attack) {
+                result += modifier.calculate(this, enemy);
+            }
+        }
+        return result;
     }
 
-    int getDamageFrom(Soldier enemy, int value, Boolean type){
-        return 0; //TODO
+    public int getDamageFrom(Soldier enemy, int value, String type){
+        int result = value;
+        for (IModifier modifier : modifiers) {
+            if (modifier instanceof Defence) {
+                result -= ((Defence)modifier).calculate(this, enemy);
+            }
+        }
+        if(type == "melee"){
+            result -= this.MeleeDefence;
+        }else{
+            result -= this.RangeDefence;
+        }
+        if(result >= 1){
+            return result;
+        }
+        return 1;
     }
 
-    void receiveAttack(Soldier enemy, int value, Boolean type){
-        //TODO
+    public void receiveAttack(Soldier enemy, int value, String type){
+        if(getDamageFrom(enemy, value, type) >= CurrHp) {
+            CurrHp = 0;
+            return;
+        }
+        CurrHp -= getDamageFrom(enemy, value, type);
     }
 
-    //TODO after adding Modifier fix getters
     public int getCurrHp() {
         return CurrHp;
     }
@@ -102,13 +139,58 @@ public class Soldier {
         return tags;
     }
 
+    public void addTag(String tag){
+        tags.add(tag);
+    }
+
     @Override
     public String toString() {
-        return name +
-                "   Hp:" + CurrHp + "/" + MaxHp +
-                "   ATK:" + Attack + //TODO add modifier attack
-                "   DEF:" + MeleeDefence + "/" + RangeDefence + //TODO add modifier Defences
-                "Modifiers:"; // TODO add modifier stats
+        StringBuilder return_value = new StringBuilder(name + "\n\tHp:" + CurrHp + "/" + MaxHp + "\n\tATK:");
+        ArrayList<Integer> help_melee = new ArrayList<Integer>();
+        ArrayList<Integer> help_ranged = new ArrayList<Integer>();
+        int starting_attack = Attack;
+        int starting_MeleeDefence = MeleeDefence;
+        int starting_RangeDefence = RangeDefence;
+
+        for (IModifier modifier : modifiers) {
+            if (modifier instanceof Attribute) {
+                if (((Attribute) modifier).getAttr_name().equals("Attack")) {
+                    return_value.append(((Attribute) modifier).getValue() + " + ");
+                    starting_attack -= ((Attribute) modifier).getValue();
+                } else if (((Attribute) modifier).getAttr_name().equals("MeleeDefence")) {
+                    help_melee.add(((Attribute) modifier).getValue());
+                    starting_MeleeDefence -= ((Attribute) modifier).getValue();
+                } else if (((Attribute) modifier).getAttr_name().equals("RangeDefence")) {
+                    help_ranged.add(((Attribute) modifier).getValue());
+                    starting_RangeDefence -= ((Attribute) modifier).getValue();
+                }
+            }
+        }
+        return_value.append(starting_attack);
+
+        return_value.append("\n\tDEF:" + starting_MeleeDefence);
+        for (int j : help_melee) {
+            return_value.append(" + " + j);
+        }
+        return_value.append("/" + starting_RangeDefence);
+        for (int j : help_ranged) {
+            return_value.append(" + " + j);
+        }
+
+        return_value.append("\nModifiers:");
+        for (IModifier modifier : modifiers) {
+            return_value.append("\nExtra ");
+            if (modifier instanceof Attribute) {
+                return_value.append(((Attribute) modifier).getAttr_name() + " +" + ((Attribute) modifier).getValue());
+            } else if (modifier instanceof Attack) {
+                return_value.append("attack against " + ((Attack) modifier).getEnemy_tag() + " +" + ((Attack) modifier).getValue());
+            } else if (modifier instanceof Defence) {
+                return_value.append("defence against " + ((Defence) modifier).getEnemy_tag() + " +" + ((Defence) modifier).getValue());
+            }
+        }
+
+
+        return return_value.toString();
     }
 }
 

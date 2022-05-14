@@ -21,12 +21,18 @@ public class Defence implements IModifier {
         return enemy_tag;
     }
 
+    public int getValue() {
+        return value;
+    }
+
     @Override
     public int calculate(Soldier soldier, Soldier enemy) {
         for(int i = 0; i < soldier.getModifiers().size(); i++){
-            for(int j = 0; i < enemy.getTags().size(); j++) {
-                if (((Defence) soldier.getModifiers().get(i)).getEnemy_tag() == enemy.getTags().get(j)){
-                    return this.value;
+            for(int j = 0; j < enemy.getTags().size(); j++) {
+                if(soldier.getModifiers().get(i) instanceof Defence) {
+                    if (((Defence) soldier.getModifiers().get(i)).getEnemy_tag().equals(enemy.getTags().get(j))) {
+                        return this.value;
+                    }
                 }
             }
         }
